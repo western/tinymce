@@ -185,6 +185,14 @@ define(
           win.find('#style').value(dom.serializeStyle(dom.parseStyle(dom.serializeStyle(css))));
         }
 
+        function updateLink(imgElm) {
+          if (!editor.settings.image_advtab) {
+            return;
+          }
+
+          editor.selection.setContent('<a href="' + imgElm.currentTarget.value + '" target="_blank">' + editor.selection.getContent() + '</a>');
+        }
+
         function waitLoad(imgElm) {
           function selectImage() {
             imgElm.onload = imgElm.onerror = null;
@@ -274,7 +282,16 @@ define(
             if (!imgElm) {
               data.id = '__mcenew';
               editor.focus();
-              editor.selection.setContent(dom.createHTML('img', data));
+
+              var link = win.find('#link').value();
+
+              if (link) {
+                editor.selection.setContent('<a href="' + link + '" target="_blank">' + dom.createHTML('img', data) + '</a>');
+              } else {
+                editor.selection.setContent(dom.createHTML('img', data));
+              }
+
+
               imgElm = dom.get('__mcenew');
               dom.setAttrib(imgElm, 'id', null);
             } else {
@@ -501,6 +518,10 @@ define(
                 data.border = Utils.removePixelSuffix(imgElm.style.borderWidth);
               }
 
+              if (editor.selection.getNode() && editor.selection.getNode().parentNode && editor.selection.getNode().parentNode.nodeName == 'A') {
+                data.link = editor.selection.getNode().parentNode.getAttribute('href');
+              }
+
               data.style = editor.dom.serializeStyle(editor.dom.parseStyle(editor.dom.getAttrib(imgElm, 'style')));
             }
 
@@ -509,6 +530,12 @@ define(
               type: 'form',
               pack: 'start',
               items: [
+                {
+                  label: 'Link',
+                  name: 'link',
+                  type: 'textbox',
+                  onchange: updateLink
+                },
                 {
                   label: 'Style',
                   name: 'style',
